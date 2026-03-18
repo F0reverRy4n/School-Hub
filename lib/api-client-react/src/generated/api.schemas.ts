@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Api
  * Student Dashboard API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 export interface HealthStatus {
   status: string;
@@ -17,6 +17,14 @@ export interface MessageResponse {
   message: string;
 }
 
+export type RegisterRequestRole =
+  (typeof RegisterRequestRole)[keyof typeof RegisterRequestRole];
+
+export const RegisterRequestRole = {
+  student: "student",
+  teacher: "teacher",
+} as const;
+
 export interface RegisterRequest {
   /**
    * @minLength 4
@@ -25,6 +33,10 @@ export interface RegisterRequest {
   username: string;
   /** @minLength 8 */
   password: string;
+  role?: RegisterRequestRole;
+  email?: string;
+  emailCode?: string;
+  schoolId?: number | null;
 }
 
 export interface LoginRequest {
@@ -35,11 +47,37 @@ export interface LoginRequest {
 export interface UserInfo {
   id: number;
   username: string;
+  role: string;
+  schoolId?: number | null;
+  email?: string | null;
 }
 
 export interface AuthResponse {
   user: UserInfo;
   message: string;
+}
+
+export interface School {
+  id: number;
+  name: string;
+  status: string;
+  requestedByUserId?: number | null;
+  createdAt: string;
+}
+
+export interface AppSettings {
+  lockdown: boolean;
+}
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  role: string;
+  email?: string | null;
+  emailVerified: boolean;
+  schoolId?: number | null;
+  schoolName?: string | null;
+  createdAt: string;
 }
 
 export interface Class {
@@ -162,3 +200,56 @@ export interface CreateResourceRequest {
   title: string;
   content: string;
 }
+
+export type SendVerificationCodeBody = {
+  email: string;
+};
+
+export type RequestSchoolBody = {
+  /**
+   * @minLength 2
+   * @maxLength 200
+   */
+  name: string;
+  requestedByEmail: string;
+};
+
+export type UpdateAdminSettingsBody = {
+  lockdown: boolean;
+};
+
+export type UpdateAdminUserBodyRole =
+  (typeof UpdateAdminUserBodyRole)[keyof typeof UpdateAdminUserBodyRole];
+
+export const UpdateAdminUserBodyRole = {
+  student: "student",
+  teacher: "teacher",
+  school_admin: "school_admin",
+  admin: "admin",
+} as const;
+
+export type UpdateAdminUserBody = {
+  role?: UpdateAdminUserBodyRole;
+  schoolId?: number | null;
+};
+
+export type CreateAdminSchoolBody = {
+  /**
+   * @minLength 2
+   * @maxLength 200
+   */
+  name: string;
+};
+
+export type UpdateAdminSchoolBodyStatus =
+  (typeof UpdateAdminSchoolBodyStatus)[keyof typeof UpdateAdminSchoolBodyStatus];
+
+export const UpdateAdminSchoolBodyStatus = {
+  approved: "approved",
+  denied: "denied",
+} as const;
+
+export type UpdateAdminSchoolBody = {
+  status: UpdateAdminSchoolBodyStatus;
+  name?: string;
+};

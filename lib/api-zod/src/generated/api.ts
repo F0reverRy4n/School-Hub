@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Api
  * Student Dashboard API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 import * as zod from "zod";
 
@@ -28,6 +28,21 @@ export const RegisterBody = zod.object({
     .min(registerBodyUsernameMin)
     .max(registerBodyUsernameMax),
   password: zod.string().min(registerBodyPasswordMin),
+  role: zod.enum(["student", "teacher"]).optional(),
+  email: zod.string().email().optional(),
+  emailCode: zod.string().optional(),
+  schoolId: zod.number().nullish(),
+});
+
+/**
+ * @summary Send email verification code for teacher registration
+ */
+export const SendVerificationCodeBody = zod.object({
+  email: zod.string().email(),
+});
+
+export const SendVerificationCodeResponse = zod.object({
+  message: zod.string(),
 });
 
 /**
@@ -42,6 +57,9 @@ export const LoginResponse = zod.object({
   user: zod.object({
     id: zod.number(),
     username: zod.string(),
+    role: zod.string(),
+    schoolId: zod.number().nullish(),
+    email: zod.string().nullish(),
   }),
   message: zod.string(),
 });
@@ -59,6 +77,39 @@ export const LogoutResponse = zod.object({
 export const GetMeResponse = zod.object({
   id: zod.number(),
   username: zod.string(),
+  role: zod.string(),
+  schoolId: zod.number().nullish(),
+  email: zod.string().nullish(),
+});
+
+/**
+ * @summary Get approved schools
+ */
+export const GetSchoolsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  status: zod.string(),
+  requestedByUserId: zod.number().nullish(),
+  createdAt: zod.date(),
+});
+export const GetSchoolsResponse = zod.array(GetSchoolsResponseItem);
+
+/**
+ * @summary Request a new school to be added
+ */
+export const requestSchoolBodyNameMin = 2;
+export const requestSchoolBodyNameMax = 200;
+
+export const RequestSchoolBody = zod.object({
+  name: zod
+    .string()
+    .min(requestSchoolBodyNameMin)
+    .max(requestSchoolBodyNameMax),
+  requestedByEmail: zod.string().email(),
+});
+
+export const RequestSchoolResponse = zod.object({
+  message: zod.string(),
 });
 
 /**
@@ -182,7 +233,7 @@ export const GetResourcesResponseItem = zod.object({
 export const GetResourcesResponse = zod.array(GetResourcesResponseItem);
 
 /**
- * @summary Create a new resource (image or link)
+ * @summary Create a new resource
  */
 export const createResourceBodyTitleMax = 200;
 
@@ -201,5 +252,154 @@ export const DeleteResourceParams = zod.object({
 });
 
 export const DeleteResourceResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * @summary Get public app settings (e.g. lockdown status)
+ */
+export const GetSettingsResponse = zod.object({
+  lockdown: zod.boolean(),
+});
+
+/**
+ * @summary Update app settings (admin only)
+ */
+export const UpdateAdminSettingsBody = zod.object({
+  lockdown: zod.boolean(),
+});
+
+export const UpdateAdminSettingsResponse = zod.object({
+  lockdown: zod.boolean(),
+});
+
+/**
+ * @summary List all users (admin only)
+ */
+export const ListAdminUsersResponseItem = zod.object({
+  id: zod.number(),
+  username: zod.string(),
+  role: zod.string(),
+  email: zod.string().nullish(),
+  emailVerified: zod.boolean(),
+  schoolId: zod.number().nullish(),
+  schoolName: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+export const ListAdminUsersResponse = zod.array(ListAdminUsersResponseItem);
+
+/**
+ * @summary Update a user's role or school (admin only)
+ */
+export const UpdateAdminUserParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateAdminUserBody = zod.object({
+  role: zod.enum(["student", "teacher", "school_admin", "admin"]).optional(),
+  schoolId: zod.number().nullish(),
+});
+
+export const UpdateAdminUserResponse = zod.object({
+  id: zod.number(),
+  username: zod.string(),
+  role: zod.string(),
+  email: zod.string().nullish(),
+  emailVerified: zod.boolean(),
+  schoolId: zod.number().nullish(),
+  schoolName: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+
+/**
+ * @summary Delete a user (admin only)
+ */
+export const DeleteAdminUserParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteAdminUserResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * @summary List all schools including pending (admin only)
+ */
+export const ListAdminSchoolsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  status: zod.string(),
+  requestedByUserId: zod.number().nullish(),
+  createdAt: zod.date(),
+});
+export const ListAdminSchoolsResponse = zod.array(ListAdminSchoolsResponseItem);
+
+/**
+ * @summary Create a school directly (admin only, no verification)
+ */
+export const createAdminSchoolBodyNameMin = 2;
+export const createAdminSchoolBodyNameMax = 200;
+
+export const CreateAdminSchoolBody = zod.object({
+  name: zod
+    .string()
+    .min(createAdminSchoolBodyNameMin)
+    .max(createAdminSchoolBodyNameMax),
+});
+
+/**
+ * @summary Approve or deny a school request (admin only)
+ */
+export const UpdateAdminSchoolParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateAdminSchoolBody = zod.object({
+  status: zod.enum(["approved", "denied"]),
+  name: zod.string().optional(),
+});
+
+export const UpdateAdminSchoolResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  status: zod.string(),
+  requestedByUserId: zod.number().nullish(),
+  createdAt: zod.date(),
+});
+
+/**
+ * @summary Delete a school (admin only)
+ */
+export const DeleteAdminSchoolParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteAdminSchoolResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * @summary List users in current school_admin's school
+ */
+export const ListSchoolUsersResponseItem = zod.object({
+  id: zod.number(),
+  username: zod.string(),
+  role: zod.string(),
+  email: zod.string().nullish(),
+  emailVerified: zod.boolean(),
+  schoolId: zod.number().nullish(),
+  schoolName: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+export const ListSchoolUsersResponse = zod.array(ListSchoolUsersResponseItem);
+
+/**
+ * @summary Remove a user from the school (school_admin or admin)
+ */
+export const RemoveUserFromSchoolParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const RemoveUserFromSchoolResponse = zod.object({
   message: zod.string(),
 });

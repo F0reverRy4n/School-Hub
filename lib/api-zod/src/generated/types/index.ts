@@ -3,13 +3,16 @@
  * Do not edit manually.
  * Api
  * Student Dashboard API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 
+export * from "./adminUser";
+export * from "./appSettings";
 export * from "./assignment";
 export * from "./assignmentPriority";
 export * from "./authResponse";
 export * from "./class";
+export * from "./createAdminSchoolBody";
 export * from "./createAssignmentRequest";
 export * from "./createAssignmentRequestPriority";
 export * from "./createClassRequest";
@@ -20,8 +23,17 @@ export * from "./healthStatus";
 export * from "./loginRequest";
 export * from "./messageResponse";
 export * from "./registerRequest";
+export * from "./registerRequestRole";
+export * from "./requestSchoolBody";
 export * from "./resource";
 export * from "./resourceType";
+export * from "./school";
+export * from "./sendVerificationCodeBody";
+export * from "./updateAdminSchoolBody";
+export * from "./updateAdminSchoolBodyStatus";
+export * from "./updateAdminSettingsBody";
+export * from "./updateAdminUserBody";
+export * from "./updateAdminUserBodyRole";
 export * from "./updateAssignmentRequest";
 export * from "./updateAssignmentRequestPriority";
 export * from "./userInfo";

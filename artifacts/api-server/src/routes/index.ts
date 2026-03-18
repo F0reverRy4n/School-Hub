@@ -4,6 +4,9 @@ import authRouter from "./auth";
 import classesRouter from "./classes";
 import assignmentsRouter from "./assignments";
 import resourcesRouter from "./resources";
+import schoolsRouter from "./schools";
+import adminRouter from "./admin";
+import settingsRouter from "./settings";
 
 const router: IRouter = Router();
 
@@ -12,5 +15,8 @@ router.use("/auth", authRouter);
 router.use("/classes", classesRouter);
 router.use("/assignments", assignmentsRouter);
 router.use("/resources", resourcesRouter);
+router.use("/schools", schoolsRouter);
+router.use("/admin", adminRouter);
+router.use("/settings", settingsRouter);
 
 export default router;

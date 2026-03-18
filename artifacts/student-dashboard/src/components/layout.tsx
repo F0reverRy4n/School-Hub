@@ -1,18 +1,13 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, CheckSquare, FolderOpen, LogOut, Settings, Plus, BookOpen, Layers } from "lucide-react";
+import { CheckSquare, FolderOpen, LogOut, Plus, ShieldAlert, School } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { useGetClasses, useCreateClass, useDeleteClass, getGetClassesQueryKey } from "@workspace/api-client-react";
+import { useGetClasses, useCreateClass, getGetClassesQueryKey } from "@workspace/api-client-react";
 import { Modal } from "./ui/modal";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useQueryClient } from "@tanstack/react-query";
-
-const NAV_ITEMS = [
-  { href: "/", label: "Assignments", icon: CheckSquare },
-  { href: "/notes", label: "Resources", icon: FolderOpen },
-];
 
 const COLORS = [
   { name: "Blue", value: "#007AFF" },
@@ -22,6 +17,13 @@ const COLORS = [
   { name: "Pink", value: "#FF2D55" },
   { name: "Red", value: "#FF3B30" },
 ];
+
+const ROLE_LABELS: Record<string, string> = {
+  student: "Student",
+  teacher: "Teacher",
+  school_admin: "School Admin",
+  admin: "Administrator",
+};
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -48,11 +50,27 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     createClassMutation.mutate({ data: { name: newClassName, color: newClassColor } });
   };
 
+  const role = user?.role ?? "student";
+
+  const navItems = [
+    { href: "/", label: "Assignments", icon: CheckSquare },
+    { href: "/notes", label: "Resources", icon: FolderOpen },
+    ...(role === "admin" ? [{ href: "/admin", label: "Admin Panel", icon: ShieldAlert }] : []),
+    ...(role === "school_admin" ? [{ href: "/school-panel", label: "School Panel", icon: School }] : []),
+  ];
+
+  const pageLabels: Record<string, string> = {
+    "/": "Assignments",
+    "/notes": "Resources",
+    "/admin": "Admin Panel",
+    "/school-panel": "School Panel",
+  };
+
+  const currentLabel = pageLabels[location] ?? "Dashboard";
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Sidebar - macOS style frosted glass */}
       <aside className="w-64 flex-shrink-0 flex flex-col border-r border-black/5 bg-white/40 backdrop-blur-2xl">
-        {/* Window Controls Mock */}
         <div className="h-12 flex items-center px-4 space-x-2 border-b border-transparent">
           <div className="w-3 h-3 rounded-full bg-[#FF5F56] shadow-sm"></div>
           <div className="w-3 h-3 rounded-full bg-[#FFBD2E] shadow-sm"></div>
@@ -62,19 +80,25 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="p-4 flex-1 flex flex-col gap-6 overflow-y-auto">
           {/* User Profile */}
           <div className="flex items-center gap-3 px-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white font-semibold shadow-sm">
+            <div className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold shadow-sm",
+              role === "admin" ? "bg-gradient-to-tr from-red-500 to-orange-400" :
+              role === "school_admin" ? "bg-gradient-to-tr from-amber-500 to-yellow-400" :
+              role === "teacher" ? "bg-gradient-to-tr from-green-500 to-emerald-400" :
+              "bg-gradient-to-tr from-primary to-purple-500"
+            )}>
               {user?.username?.charAt(0).toUpperCase()}
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground leading-none">{user?.username}</p>
-              <p className="text-xs text-muted-foreground mt-1">Student</p>
+              <p className="text-xs text-muted-foreground mt-1">{ROLE_LABELS[role] ?? "User"}</p>
             </div>
           </div>
 
           {/* Main Navigation */}
           <div className="space-y-1">
             <p className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Menu</p>
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
               return (
                 <Link
@@ -107,10 +131,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
             
             {classes?.map((c) => (
-              <div
-                key={c.id}
-                className="flex items-center gap-3 px-3 py-1.5 text-sm text-foreground/80 group"
-              >
+              <div key={c.id} className="flex items-center gap-3 px-3 py-1.5 text-sm text-foreground/80 group">
                 <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: c.color }} />
                 <span className="truncate flex-1">{c.name}</span>
               </div>
@@ -134,16 +155,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <main className="flex-1 flex flex-col relative z-0">
-        {/* Top Header */}
         <header className="h-12 border-b border-black/5 bg-white/40 backdrop-blur-xl flex items-center px-6 sticky top-0 z-10">
-          <h1 className="text-sm font-semibold text-foreground/80">
-            {location === "/" ? "Assignments" : "Resources"}
-          </h1>
+          <h1 className="text-sm font-semibold text-foreground/80">{currentLabel}</h1>
         </header>
         
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8">
           <div className="max-w-5xl mx-auto">
             {children}
@@ -151,12 +167,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </main>
 
-      {/* Add Class Modal */}
-      <Modal 
-        isOpen={isClassModalOpen} 
-        onClose={() => setIsClassModalOpen(false)}
-        title="Add New Class"
-      >
+      <Modal isOpen={isClassModalOpen} onClose={() => setIsClassModalOpen(false)} title="Add New Class">
         <form onSubmit={handleCreateClass} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Class Name</label>

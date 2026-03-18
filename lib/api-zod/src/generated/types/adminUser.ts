@@ -6,10 +6,13 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export interface UserInfo {
+export interface AdminUser {
   id: number;
   username: string;
   role: string;
-  schoolId?: number | null;
   email?: string | null;
+  emailVerified: boolean;
+  schoolId?: number | null;
+  schoolName?: string | null;
+  createdAt: Date;
 }

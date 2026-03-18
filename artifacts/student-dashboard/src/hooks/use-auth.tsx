@@ -8,8 +8,16 @@ import {
   getGetMeQueryKey
 } from "@workspace/api-client-react";
 
+interface User {
+  id: number;
+  username: string;
+  role: string;
+  schoolId?: number | null;
+  email?: string | null;
+}
+
 interface AuthContextType {
-  user: { id: number; username: string } | null;
+  user: User | null;
   isLoading: boolean;
   logout: () => void;
 }
@@ -19,7 +27,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   
-  // getMe will fail if no session, we handle this gracefully
   const { data: user, isLoading } = useGetMe({
     query: {
       retry: false,

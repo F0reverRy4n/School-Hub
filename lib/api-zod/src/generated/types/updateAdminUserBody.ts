@@ -5,11 +5,9 @@
  * Student Dashboard API
  * OpenAPI spec version: 0.2.0
  */
+import type { UpdateAdminUserBodyRole } from "./updateAdminUserBodyRole";
 
-export interface UserInfo {
-  id: number;
-  username: string;
-  role: string;
+export type UpdateAdminUserBody = {
+  role?: UpdateAdminUserBodyRole;
   schoolId?: number | null;
-  email?: string | null;
-}
+};

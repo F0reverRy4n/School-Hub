@@ -1,22 +1,20 @@
 openapi: 3.1.0
 info:
   title: Api
-  version: 0.1.0
+  version: 0.2.0
   description: Student Dashboard API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
   - name: auth
-    description: Authentication operations
   - name: classes
-    description: Class management
   - name: assignments
-    description: Assignment management
   - name: resources
-    description: Notes and resources management
+  - name: schools
+  - name: admin
+  - name: settings
 paths:
   /healthz:
     get:
@@ -57,6 +55,36 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "409":
           description: Username taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/send-verification-code:
+    post:
+      operationId: sendVerificationCode
+      tags: [auth]
+      summary: Send email verification code for teacher registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+              required: [email]
+      responses:
+        "200":
+          description: Code sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Invalid email
           content:
             application/json:
               schema:
@@ -114,6 +142,55 @@ paths:
                 $ref: "#/components/schemas/UserInfo"
         "401":
           description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /schools:
+    get:
+      operationId: getSchools
+      tags: [schools]
+      summary: Get approved schools
+      responses:
+        "200":
+          description: List of approved schools
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/School"
+
+  /schools/request:
+    post:
+      operationId: requestSchool
+      tags: [schools]
+      summary: Request a new school to be added
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 200
+                requestedByEmail:
+                  type: string
+                  format: email
+              required: [name, requestedByEmail]
+      responses:
+        "200":
+          description: Request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Validation error
           content:
             application/json:
               schema:
@@ -327,7 +404,7 @@ paths:
     post:
       operationId: createResource
       tags: [resources]
-      summary: Create a new resource (image or link)
+      summary: Create a new resource
       requestBody:
         required: true
         content:
@@ -379,6 +456,311 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get public app settings (e.g. lockdown status)
+      responses:
+        "200":
+          description: App settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppSettings"
+
+  /admin/settings:
+    put:
+      operationId: updateAdminSettings
+      tags: [admin]
+      summary: Update app settings (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lockdown:
+                  type: boolean
+              required: [lockdown]
+      responses:
+        "200":
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppSettings"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [admin]
+      summary: List all users (admin only)
+      responses:
+        "200":
+          description: All users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/users/{id}:
+    put:
+      operationId: updateAdminUser
+      tags: [admin]
+      summary: Update a user's role or school (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [student, teacher, school_admin, admin]
+                schoolId:
+                  type: integer
+                  nullable: true
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteAdminUser
+      tags: [admin]
+      summary: Delete a user (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/schools:
+    get:
+      operationId: listAdminSchools
+      tags: [admin]
+      summary: List all schools including pending (admin only)
+      responses:
+        "200":
+          description: All schools
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/School"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createAdminSchool
+      tags: [admin]
+      summary: Create a school directly (admin only, no verification)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 200
+              required: [name]
+      responses:
+        "201":
+          description: School created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/School"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/schools/{id}:
+    put:
+      operationId: updateAdminSchool
+      tags: [admin]
+      summary: Approve or deny a school request (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [approved, denied]
+                name:
+                  type: string
+              required: [status]
+      responses:
+        "200":
+          description: School updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/School"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteAdminSchool
+      tags: [admin]
+      summary: Delete a school (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: School deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /school-admin/users:
+    get:
+      operationId: listSchoolUsers
+      tags: [admin]
+      summary: List users in current school_admin's school
+      responses:
+        "200":
+          description: School members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /school-admin/users/{id}/remove:
+    post:
+      operationId: removeUserFromSchool
+      tags: [admin]
+      summary: Remove a user from the school (school_admin or admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User removed from school
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -412,6 +794,17 @@ components:
         password:
           type: string
           minLength: 8
+        role:
+          type: string
+          enum: [student, teacher]
+        email:
+          type: string
+          format: email
+        emailCode:
+          type: string
+        schoolId:
+          type: integer
+          nullable: true
       required: [username, password]
 
     LoginRequest:
@@ -439,7 +832,64 @@ components:
           type: integer
         username:
           type: string
-      required: [id, username]
+        role:
+          type: string
+        schoolId:
+          type: integer
+          nullable: true
+        email:
+          type: string
+          nullable: true
+      required: [id, username, role]
+
+    School:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        requestedByUserId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, status, createdAt]
+
+    AppSettings:
+      type: object
+      properties:
+        lockdown:
+          type: boolean
+      required: [lockdown]
+
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        role:
+          type: string
+        email:
+          type: string
+          nullable: true
+        emailVerified:
+          type: boolean
+        schoolId:
+          type: integer
+          nullable: true
+        schoolName:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, username, role, emailVerified, createdAt]
 
     Class:
       type: object

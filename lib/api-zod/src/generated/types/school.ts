@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export interface HealthStatus {
+export interface School {
+  id: number;
+  name: string;
   status: string;
+  requestedByUserId?: number | null;
+  createdAt: Date;
 }
