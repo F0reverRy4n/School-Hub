@@ -9,7 +9,7 @@ import {
   Resource
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Link2, Image as ImageIcon, FileText, Plus, Trash2, ExternalLink } from "lucide-react";
+import { Link2, Image as ImageIcon, FileText, Plus, Trash2, ExternalLink, FolderOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
