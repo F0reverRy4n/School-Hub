@@ -10,7 +10,7 @@ import {
   Assignment
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Check, Trash2, Calendar, Clock, Flag, Circle, CheckCircle2 } from "lucide-react";
+import { Plus, Check, Trash2, Calendar, Clock, Flag, Circle, CheckCircle2, FolderOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
