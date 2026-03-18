@@ -10,12 +10,63 @@ import {
   Assignment
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Check, Trash2, Calendar, Clock, Flag, Circle, CheckCircle2, FolderOpen } from "lucide-react";
+import { Plus, Check, Trash2, Calendar, Clock, Flag, Circle, CheckCircle2, FolderOpen, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { cn, formatDate, getPriorityColor } from "@/lib/utils";
+
+function getSuggestion(priority: string, dueDate?: string | null): { text: string; urgency: "red" | "amber" | "green" | "muted" } | null {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  if (!dueDate) {
+    if (priority === "high") return { text: "No deadline set — recommended to begin this today.", urgency: "red" };
+    if (priority === "medium") return { text: "No deadline — work on this when you can.", urgency: "muted" };
+    return null;
+  }
+
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+  const days = Math.round((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (days < 0) return { text: "This is overdue — submit as soon as possible!", urgency: "red" };
+
+  if (days === 0) {
+    if (priority === "high")   return { text: "Due today — finish this first!", urgency: "red" };
+    if (priority === "medium") return { text: "Due today — get this done!", urgency: "amber" };
+    return                            { text: "Due today — don't forget to submit!", urgency: "amber" };
+  }
+
+  if (days === 1) {
+    if (priority === "high")   return { text: "Due tomorrow — start now if you haven't already.", urgency: "red" };
+    if (priority === "medium") return { text: "Due tomorrow — plan some time for this today.", urgency: "amber" };
+    return                            { text: "Due tomorrow — low priority, but don't forget.", urgency: "muted" };
+  }
+
+  if (days <= 3) {
+    if (priority === "high")   return { text: "Due soon — recommended to begin this today.", urgency: "red" };
+    if (priority === "medium") return { text: "Due in a few days — good time to start.", urgency: "amber" };
+    return                            { text: "Due soon, but you have some time.", urgency: "green" };
+  }
+
+  if (days <= 7) {
+    if (priority === "high")   return { text: "High priority — start this early in the week.", urgency: "amber" };
+    if (priority === "medium") return { text: "Due this week — plan to work on it soon.", urgency: "muted" };
+    return                            { text: "No rush — check in when you have time.", urgency: "green" };
+  }
+
+  if (priority === "high") return { text: "High priority — consider starting early.", urgency: "muted" };
+  return null;
+}
+
+const suggestionStyles = {
+  red:   "bg-red-50 text-red-600 border-red-200",
+  amber: "bg-amber-50 text-amber-700 border-amber-200",
+  green: "bg-green-50 text-green-700 border-green-200",
+  muted: "bg-black/5 text-muted-foreground border-transparent",
+};
 
 export function AssignmentsPage() {
   const queryClient = useQueryClient();
@@ -203,6 +254,18 @@ export function AssignmentsPage() {
                     </div>
                   )}
                 </div>
+                {!assignment.completed && (() => {
+                  const suggestion = getSuggestion(assignment.priority, assignment.dueDate);
+                  return suggestion ? (
+                    <div className={cn(
+                      "mt-2 flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border w-fit",
+                      suggestionStyles[suggestion.urgency]
+                    )}>
+                      <Lightbulb className="w-3 h-3 flex-shrink-0" />
+                      {suggestion.text}
+                    </div>
+                  ) : null;
+                })()}
               </div>
             </motion.div>
           ))}
