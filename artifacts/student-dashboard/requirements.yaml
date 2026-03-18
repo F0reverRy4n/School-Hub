@@ -1,0 +1,17 @@
+packages:
+  "framer-motion": "For smooth page transitions and macOS-like modal animations"
+  "date-fns": "For formatting assignment due dates gracefully"
+  "clsx": "For conditional tailwind class merging"
+  "tailwind-merge": "For conflict-free tailwind class merging"
+  "react-hook-form": "For robust form state management"
+  "@hookform/resolvers": "For Zod schema validation in forms"
+  "zod": "For form validation schemas"
+
+images:
+  - path: "artifacts/student-dashboard/public/images/mac-bg.png"
+    description: "Abstract fluid gradient background, very soft and subtle pastel colors typical of modern macOS default wallpapers, light mode, mostly soft light blue, purple, and pink blurred together"
+    aspect_ratio: "16:9"
+
+notes:
+  - Using generated Orval hooks from @workspace/api-client-react
+  - Implement full custom glassmorphic UI to ensure macOS aesthetic
