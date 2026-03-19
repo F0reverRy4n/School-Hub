@@ -120,6 +120,10 @@ export const GetClassesResponseItem = zod.object({
   userId: zod.number(),
   name: zod.string(),
   color: zod.string(),
+  joinCode: zod.string().nullish(),
+  isTeacherClass: zod.boolean(),
+  ownerUsername: zod.string().nullish(),
+  enrolledCount: zod.number().nullish(),
   createdAt: zod.date(),
 });
 export const GetClassesResponse = zod.array(GetClassesResponseItem);
@@ -133,6 +137,36 @@ export const CreateClassBody = zod.object({
   name: zod.string().min(1).max(createClassBodyNameMax),
   color: zod.string(),
 });
+
+/**
+ * @summary Join a teacher's class using a join code
+ */
+export const JoinClassBody = zod.object({
+  joinCode: zod.string(),
+});
+
+export const JoinClassResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * @summary Get students enrolled in a teacher's class
+ */
+export const GetClassStudentsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetClassStudentsResponseItem = zod.object({
+  id: zod.number(),
+  username: zod.string(),
+  role: zod.string(),
+  email: zod.string().nullish(),
+  emailVerified: zod.boolean(),
+  schoolId: zod.number().nullish(),
+  schoolName: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+export const GetClassStudentsResponse = zod.array(GetClassStudentsResponseItem);
 
 /**
  * @summary Delete a class

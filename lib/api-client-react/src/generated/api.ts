@@ -28,6 +28,7 @@ import type {
   CreateResourceRequest,
   ErrorResponse,
   HealthStatus,
+  JoinClassBody,
   LoginRequest,
   MessageResponse,
   RegisterRequest,
@@ -846,6 +847,179 @@ export const useCreateClass = <
 > => {
   return useMutation(getCreateClassMutationOptions(options));
 };
+
+/**
+ * @summary Join a teacher's class using a join code
+ */
+export const getJoinClassUrl = () => {
+  return `/api/classes/join`;
+};
+
+export const joinClass = async (
+  joinClassBody: JoinClassBody,
+  options?: RequestInit,
+): Promise<MessageResponse> => {
+  return customFetch<MessageResponse>(getJoinClassUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(joinClassBody),
+  });
+};
+
+export const getJoinClassMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof joinClass>>,
+    TError,
+    { data: BodyType<JoinClassBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof joinClass>>,
+  TError,
+  { data: BodyType<JoinClassBody> },
+  TContext
+> => {
+  const mutationKey = ["joinClass"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof joinClass>>,
+    { data: BodyType<JoinClassBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return joinClass(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type JoinClassMutationResult = NonNullable<
+  Awaited<ReturnType<typeof joinClass>>
+>;
+export type JoinClassMutationBody = BodyType<JoinClassBody>;
+export type JoinClassMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Join a teacher's class using a join code
+ */
+export const useJoinClass = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof joinClass>>,
+    TError,
+    { data: BodyType<JoinClassBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof joinClass>>,
+  TError,
+  { data: BodyType<JoinClassBody> },
+  TContext
+> => {
+  return useMutation(getJoinClassMutationOptions(options));
+};
+
+/**
+ * @summary Get students enrolled in a teacher's class
+ */
+export const getGetClassStudentsUrl = (id: number) => {
+  return `/api/classes/${id}/students`;
+};
+
+export const getClassStudents = async (
+  id: number,
+  options?: RequestInit,
+): Promise<AdminUser[]> => {
+  return customFetch<AdminUser[]>(getGetClassStudentsUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetClassStudentsQueryKey = (id: number) => {
+  return [`/api/classes/${id}/students`] as const;
+};
+
+export const getGetClassStudentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getClassStudents>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getClassStudents>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetClassStudentsQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getClassStudents>>
+  > = ({ signal }) => getClassStudents(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getClassStudents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetClassStudentsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getClassStudents>>
+>;
+export type GetClassStudentsQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get students enrolled in a teacher's class
+ */
+
+export function useGetClassStudents<
+  TData = Awaited<ReturnType<typeof getClassStudents>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getClassStudents>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetClassStudentsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Delete a class

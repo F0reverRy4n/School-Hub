@@ -11,5 +11,9 @@ export interface Class {
   userId: number;
   name: string;
   color: string;
+  joinCode?: string | null;
+  isTeacherClass: boolean;
+  ownerUsername?: string | null;
+  enrolledCount?: number | null;
   createdAt: Date;
 }

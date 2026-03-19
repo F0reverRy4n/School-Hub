@@ -240,6 +240,68 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /classes/join:
+    post:
+      operationId: joinClass
+      tags: [classes]
+      summary: Join a teacher's class using a join code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                joinCode:
+                  type: string
+              required: [joinCode]
+      responses:
+        "200":
+          description: Joined class
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Invalid or already joined
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Class not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /classes/{id}/students:
+    get:
+      operationId: getClassStudents
+      tags: [classes]
+      summary: Get students enrolled in a teacher's class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Enrolled students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /classes/{id}:
     delete:
       operationId: deleteClass
@@ -902,10 +964,21 @@ components:
           type: string
         color:
           type: string
+        joinCode:
+          type: string
+          nullable: true
+        isTeacherClass:
+          type: boolean
+        ownerUsername:
+          type: string
+          nullable: true
+        enrolledCount:
+          type: integer
+          nullable: true
         createdAt:
           type: string
           format: date-time
-      required: [id, userId, name, color, createdAt]
+      required: [id, userId, name, color, isTeacherClass, createdAt]
 
     CreateClassRequest:
       type: object

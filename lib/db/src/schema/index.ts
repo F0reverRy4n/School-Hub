@@ -1,6 +1,7 @@
 export * from "./schools";
 export * from "./users";
 export * from "./classes";
+export * from "./enrollments";
 export * from "./assignments";
 export * from "./resources";
 export * from "./email-verifications";

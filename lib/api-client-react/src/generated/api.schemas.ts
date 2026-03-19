@@ -85,6 +85,10 @@ export interface Class {
   userId: number;
   name: string;
   color: string;
+  joinCode?: string | null;
+  isTeacherClass: boolean;
+  ownerUsername?: string | null;
+  enrolledCount?: number | null;
   createdAt: string;
 }
 
@@ -212,6 +216,10 @@ export type RequestSchoolBody = {
    */
   name: string;
   requestedByEmail: string;
+};
+
+export type JoinClassBody = {
+  joinCode: string;
 };
 
 export type UpdateAdminSettingsBody = {

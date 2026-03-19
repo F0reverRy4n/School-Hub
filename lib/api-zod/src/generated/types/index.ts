@@ -20,6 +20,7 @@ export * from "./createResourceRequest";
 export * from "./createResourceRequestType";
 export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./joinClassBody";
 export * from "./loginRequest";
 export * from "./messageResponse";
 export * from "./registerRequest";

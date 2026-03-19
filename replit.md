@@ -2,7 +2,7 @@
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Student productivity dashboard with macOS UI theme. Multi-role system (student, teacher, school_admin, admin) with email verification for teachers.
+pnpm workspace monorepo using TypeScript. Student productivity dashboard with macOS UI theme. Multi-role system (student, teacher, school_admin, admin) with email verification for teachers. Teacher classes use auto-generated 6-char join codes; students join by entering the code.
 
 ## Stack
 
